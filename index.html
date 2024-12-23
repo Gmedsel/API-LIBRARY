@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Books API Search</title>
+    <script src="index.js"></script>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+
+        h1 {
+            text-align: center;
+            margin-top: 50px;
+            color: #333;
+            font-size: 42px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .search-container {
+            text-align: center;
+            margin-bottom: 30px;
+          
+        }
+
+        #searchQuery {
+            padding: 14px;
+            width: 65%;
+            font-size: 18px;
+            margin-right: 10px;
+            border: 2px solid #007bff;
+            border-radius: 8px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        #searchQuery:focus {
+            border-color: blue;
+            box-shadow: 0 0 10px rgba(0, 91, 255, 0.4);
+        }
+
+        button {
+            padding: 16px ;
+            font-size: 18px;
+            background-color: green;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-left: 15px;
+         
+        }
+
+        button:hover {
+            background-color: #0056b3;
+            transform: scale(1.05);
+        }
+
+        #results {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .book-item {
+            width: 200px;
+            background-color: #fff;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            overflow: hidden;
+        }
+
+        .book-item:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .book-item img {
+            max-width: 100%;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .book-item:hover img {
+            transform: scale(1.05);
+        }
+
+        .book-item h3 {
+            font-size: 15px;
+            color: #333;
+            margin-bottom: 10px;
+            font-weight: 600;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+
+        .book-item p {
+            font-size: 15px;
+            color: #666;
+            margin: 5px;
+            line-height: 1.5;
+            height: 30px;
+            width: 100px;
+            overflow: hidden;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.5s ease;
+        }
+
+        .modal-content {
+            background-color: #fff;
+            margin: 10% auto;
+            padding: 40px;
+            border-radius: 12px;
+            width: 80%;
+            max-width: 900px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+            opacity: 0;
+            animation: popUp 0.5s forwards;
+            max-height: 80vh;
+            overflow-y: auto; 
+        }
+
+        .modal-content h2 {
+            font-size: 15px;
+            color: #007bff;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .modal-content p {
+            font-size: 15px;
+            color: #444;
+            margin: 10px 0;
+            line-height: 1.6;
+        }
+
+        .modal-content img {
+            width: 50%;
+           height: 30%;
+            margin-top: 20px;
+            border-radius: 5px;
+        }
+        .search-container  img {
+       height: 32px;
+       weight: 31px;
+       margin-left: -53px;
+       margin-bottom: -5px;
+}
+
+        .close {
+            color: #aaa;
+            font-size: 36px;
+            font-weight: bold;
+            position: absolute;
+            top: 15px;
+            right: 25px;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: #007bff;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes popUp {
+            from { opacity: 0; transform: scale(0.5); }
+            to { opacity: 1; transform: scale(1); }
+        }
+       
+       
+      
+.header {
+    background-image: url('a.jpg');
+    background-size: cover; 
+    background-position: center center; 
+    color: white; 
+    padding: 10px 20px;
+   max-height: 300vh;
+   height: 300px;
+    
+
+}
+
+    </style>
+</head>
+<body>
+    <div class="header">
+    <div class="search-container">
+    <h1>MINI LIBRARY</h1>
+
+        <input type="text" id="searchQuery" placeholder="Search for books...">
+        <img src="search.png" class="search-icon" alt="Search Icon">
+      
+       
+<button onclick="searchBooks()">Search</button>
+</div>
+</div>
+
+    <div id="results"></div>
+
+    <!-- Modal -->
+    <div id="myModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2 id="modalTitle"></h2>
+            <p><strong>Authors:</strong> <span id="modalAuthors"></span></p>
+            <p><strong>Publisher:</strong> <span id="modalPublisher"></span></p>
+            <h3>Storyline:</h3>
+            <p id="modalDescription"></p>
+            <img id="modalImage" />
+        </div>
+    </div>
+
+    <script>
+        // Your Google Books API key
+        const API_KEY = 'AIzaSyDuLkSYpLo9SLhtDW5XDrWaQ2FyCr-S738';
+        const BASE_URL = 'https://www.googleapis.com/books/v1/volumes';
+
+        // Function to search for books
+        function searchBooks() {
+            const query = document.getElementById('searchQuery').value;
+            const resultsContainer = document.getElementById('results');
+            resultsContainer.innerHTML = '';  // Clear previous results
+
+            if (query) {
+                const url = `${BASE_URL}?q=${encodeURIComponent(query)}&key=${API_KEY}`;
+
+                fetch(url)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.items) {
+                            displayBooks(data.items);
+                        } else {
+                            resultsContainer.innerHTML = '<p class="no-results">No books found.</p>';
+                        }
+                    })
+                    .catch(error => {
+                        resultsContainer.innerHTML = '<p class="no-results">An error occurred while fetching the data.</p>';
+                        console.error(error);
+                    });
+            }
+        }
+
+        // Function to display books
+        function displayBooks(books) {
+            const resultsContainer = document.getElementById('results');
+            books.forEach(book => {
+                const volumeInfo = book.volumeInfo;
+                const bookElement = document.createElement('div');
+                bookElement.classList.add('book-item');
+                bookElement.onclick = () => openModal(volumeInfo);
+
+                const title = volumeInfo.title || 'No title available';
+                const authors = volumeInfo.authors ? volumeInfo.authors.join(', ') : 'Unknown author';
+                const publisher = volumeInfo.publisher || 'Unknown publisher';
+                const description = volumeInfo.description || 'No description available';
+                const imageUrl = volumeInfo.imageLinks ? volumeInfo.imageLinks.thumbnail : 'https://via.placeholder.com/150';
+
+                bookElement.innerHTML = `
+                    <img src="${imageUrl}" alt="Book Cover">
+                    <h3>${title}</h3>
+                    <p><strong>Authors:</strong> ${authors}</p>
+                    <p><strong>Publisher:</strong> ${publisher}</p>
+                    <p><strong>Description:</strong> ${description}</p>
+                `;
+
+                resultsContainer.appendChild(bookElement);
+            });
+        }
+
+        // Function to open the modal and show more details
+        function openModal(volumeInfo) {
+            document.getElementById('modalTitle').innerText = volumeInfo.title || 'No title available';
+            document.getElementById('modalAuthors').innerText = volumeInfo.authors ? volumeInfo.authors.join(', ') : 'Unknown author';
+            document.getElementById('modalPublisher').innerText = volumeInfo.publisher || 'Unknown publisher';
+            document.getElementById('modalDescription').innerText = volumeInfo.description || 'No description available';
+            document.getElementById('modalImage').src = volumeInfo.imageLinks ? volumeInfo.imageLinks.thumbnail : 'https://via.placeholder.com/150';
+
+            document.getElementById('myModal').style.display = 'block';
+        }
+
+        // Function to close the modal
+        function closeModal() {
+            document.getElementById('myModal').style.display = 'none';
+        }
+    </script>
+
+</body>
+</html>
